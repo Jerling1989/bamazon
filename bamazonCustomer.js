@@ -60,7 +60,7 @@ function promptUser(){
 	inquirer.prompt([
 	{
 	  	name: "ans",
-      	message: "What is the ID of the product you wish to buy?",
+      	message: "SPECIFY THE ID OF THE PRODUCT YOU WOULD LIKE TO BUY...",
       	validate: function(value) {
           	if (isNaN(value) === false && parseInt(value) > 0 && parseInt(value) <= itemCount) {
           		return true;
@@ -77,6 +77,7 @@ function promptUser(){
 	});
 }
 
+// Ask User the ID of the Product They'd Like to Buy
 function getItemName(){
 
 	connection.query("SELECT * FROM products WHERE item_id =" + itemId +";" ,function(err, res){
@@ -87,12 +88,13 @@ function getItemName(){
 	});
 }
 
+// Ask User How Many Units They Want of the Product They Selected
 function getUnits(){
 
 	inquirer.prompt([
 	{
 	  	name: "ans",
-      	message: "How many units of " + itemName + " would you like to purchase?",
+      	message: "HOW MANY UNITS OF " + itemName + " WOULD YOU LIKE TO BUY?",
       	validate: function(value) {
           	if (isNaN(value) === false && parseInt(value) > 0 && parseInt(value) <= 200) {
           		return true;
@@ -108,6 +110,7 @@ function getUnits(){
 
 }
 
+// Check if There is Enough of the Item in Stock to Sell it
 function transactionCheck(){
 
 	connection.query("SELECT stock_quantity FROM products WHERE item_id =" + itemId +";" ,function(err, res){
@@ -116,23 +119,24 @@ function transactionCheck(){
 			quantity = res[0].stock_quantity - units;		
 			makeTransaction();
 		}	else {
-			console.log("Not enough in stock!");
-			getUnits();
+			console.log("PRODUCT OUT OF STOCK");
 		}
 
 	});
 }
 
+// If There is Enough in Stock Sell it
 function makeTransaction(){
 
 	connection.query("UPDATE products SET stock_quantity=" + quantity + " WHERE item_id = " + itemId + ";",
 		function(err, res) {
-	    	console.log("Updated Stock Quantity...");
+	    	console.log("PRODUCT STOCK QUANTITY UPDATED");
 
 	      processPrice();   
     });
 }
 
+// Get The Sum for the Price of the Total Number of Units User Wants
 function processPrice(){
 
 	connection.query("SELECT * FROM products WHERE item_id=" + itemId + ";", 
@@ -142,30 +146,7 @@ function processPrice(){
 			console.log("");
 			console.log("Number of " + itemName + "(s) remaining: " + res[0].stock_quantity);
 			console.log("Total: $" + totalPrice);
-			getProductSales();
-		
+
 		});
 
-}
-
-function getProductSales(){
-
-	connection.query("SELECT product_sales FROM products WHERE item_id =" + itemId +";" ,function(err, res){	
-		pSales = res[0].product_sales;
-		pSales += totalPrice;
-
-		updateProductSales();
-	});
-
-}
-
-function updateProductSales(){
-	//update product_sales
-	connection.query("UPDATE products SET product_sales=" + pSales + " WHERE item_id = " + itemId + ";",
-		function(err, res) {
-
-			process.exit(-1);
-
-	  });
-	
 }
